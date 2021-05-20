@@ -1,3 +1,5 @@
+import os
+
 import requests
 
 from .util import print_stderr
@@ -44,3 +46,8 @@ class SpotifyApiClient:
                 print_stderr()
                 page["items"] = items
                 return page
+
+
+def spotify_api_client():
+    oauth_token = os.environ["SPLOT_OAUTH_TOKEN"]
+    return SpotifyApiClient(oauth_token)
