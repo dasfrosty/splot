@@ -3,8 +3,8 @@ import json
 import click
 from dotenv import load_dotenv
 
-from .client import spotify_api_client
 from .db import splot_db
+from .spotify_api_client import spotify_api_client
 from .util import print_stderr
 
 load_dotenv()
@@ -40,10 +40,18 @@ def dump_playlists():
 
 
 @cli.command()
-def sync_playlists():
-    playlists = client._get_current_users_playlists(1, 0)
+def sync_one_playlist():
+    playlists = client._get_current_users_playlists(10, 0)
     playlist = playlists["items"][0]
     db.upsert_playlist(playlist)
+
+
+@cli.command()
+def sync_playlists():
+    playlists = client.get_current_users_playlists()
+    for idx, playlist in enumerate(playlists["items"]):
+        playlist["idx"] = idx
+        db.upsert_playlist(playlist)
 
 
 if __name__ == "__main__":

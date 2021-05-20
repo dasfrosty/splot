@@ -1,5 +1,7 @@
-from pymongo import MongoClient
 import os
+from pprint import pprint
+
+from pymongo import MongoClient
 
 
 class SplotDb:
@@ -10,8 +12,10 @@ class SplotDb:
         self.db.playlists.create_index("id", unique=True)
 
     def upsert_playlist(self, playlist):
-        q = {"id": playlist["id"]}
-        self.db.playlists.update_one(q, {"$set": playlist}, upsert=True)
+        print(f"Upserting playlist {playlist['name']}")
+        f = {"id": playlist["id"]}
+        result = self.db.playlists.replace_one(f, playlist, upsert=True)
+        pprint(result.raw_result)
 
 
 def splot_db():
