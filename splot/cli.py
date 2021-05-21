@@ -111,17 +111,17 @@ def sync_playlist(playlist_id):
 
 @cli.command()
 def sync_playlists():
+    current_users_profile = client.get_current_users_profile()
+    current_user_id = current_users_profile["display_name"]
     playlists = client.get_current_users_playlists()
     idx = 0
     for playlist in playlists["items"]:
         if playlist["owner"]["id"] == "pottyspice":
             _load_playlist_tracks(playlist)
-            playlist["idx"] = idx
-            db.upsert_playlist(playlist)
-            idx += 1
-        else:
-            # print(f"skip syncing playlist {playlist['name']}")
-            db.upsert_playlist(playlist)
+        playlist["idx"] = idx
+        playlist["current_user"] = current_user_id
+        db.upsert_playlist(playlist)
+        idx += 1
 
 
 if __name__ == "__main__":
