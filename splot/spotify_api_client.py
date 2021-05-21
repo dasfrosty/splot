@@ -23,17 +23,43 @@ class SpotifyApiClient:
         r.raise_for_status()
         return r.json()
 
+    def _get_playlist_tracks(self, playlist_id, limit: int, offset: int):
+        endpoint = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks?limit={limit}&offset={offset}"
+        r = requests.get(endpoint, headers=self._headers())
+        r.raise_for_status()
+        return r.json()
+
+    def get_playlist_tracks(self, playlist_id):
+        limit = 20
+        offset = 0
+        items = []
+
+        while True:
+            page = self._get_playlist_tracks(playlist_id, limit, offset)
+            items += page["items"]
+            offset += limit
+            print_stderr(".", end="", flush=True)
+            if page["next"] is None:
+                print_stderr()
+                page["items"] = items
+                return page
+
+    def get_playlist(self, playlist_id):
+        endpoint = f"https://api.spotify.com/v1/playlists/{playlist_id}"
+        r = requests.get(endpoint, headers=self._headers())
+        r.raise_for_status()
+        return r.json()
+
     def _get_current_users_playlists(self, limit: int, offset: int):
         endpoint = (
             f"https://api.spotify.com/v1/me/playlists?limit={limit}&offset={offset}"
         )
-
         r = requests.get(endpoint, headers=self._headers())
         r.raise_for_status()
         return r.json()
 
     def get_current_users_playlists(self):
-        limit = 10
+        limit = 20
         offset = 0
         items = []
 
