@@ -30,7 +30,7 @@ class SpotifyApiClient:
         return r.json()
 
     def get_playlist_tracks(self, playlist_id):
-        limit = 20
+        limit = 100
         offset = 0
         items = []
 
@@ -59,7 +59,7 @@ class SpotifyApiClient:
         return r.json()
 
     def get_current_users_playlists(self):
-        limit = 20
+        limit = 50
         offset = 0
         items = []
 
