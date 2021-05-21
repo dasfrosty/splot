@@ -15,6 +15,7 @@ DATE_FORMAT_STRING = "%Y-%m-%dT%H:%M:%SZ"
 
 client = spotify_api_client()
 db = splot_db()
+db.create_indexes()
 
 
 @click.group()
@@ -112,14 +113,15 @@ def sync_playlist(playlist_id):
 @cli.command()
 def sync_playlists():
     current_users_profile = client.get_current_users_profile()
-    current_user_id = current_users_profile["display_name"]
+    current_user_id = current_users_profile["id"]
+    current_user_display = current_users_profile["display_name"]
     playlists = client.get_current_users_playlists()
     idx = 0
     for playlist in playlists["items"]:
-        if playlist["owner"]["id"] == "pottyspice":
+        if playlist["owner"]["id"] == current_user_id:
             _load_playlist_tracks(playlist)
         playlist["idx"] = idx
-        playlist["current_user"] = current_user_id
+        playlist["current_user"] = current_user_display
         db.upsert_playlist(playlist)
         idx += 1
 
