@@ -1,4 +1,5 @@
 import json
+import time
 from datetime import datetime
 from pprint import pprint
 
@@ -124,6 +125,55 @@ def sync_playlists():
         playlist["current_user"] = current_user_display
         db.upsert_playlist(playlist)
         idx += 1
+
+
+@cli.command()
+@click.argument("playlist-name")
+def find_playlist_by_name(playlist_name):
+    playlist = client.find_playlist_by_name(playlist_name)
+    if playlist:
+        print(f'Playlist found: {playlist["name"]} - {playlist["id"]}')
+    else:
+        print("Playlist not found!")
+
+
+@cli.command()
+@click.argument("playlist-id")
+def clone_playlist(playlist_id):
+    current_users_profile = client.get_current_users_profile()
+    current_user_id = current_users_profile["id"]
+    playlist = client.get_playlist(playlist_id)
+
+    # make sure we're not cloning our own playlist by accident
+    assert current_user_id != playlist["owner"]["id"]
+
+    playlist_tracks = client.get_playlist_tracks(playlist["id"])
+
+    # make sure playlist doesn't already exist
+    existing_playlist = find_playlist_by_name(playlist["name"])
+    if existing_playlist:
+        print(f'Error: Playlist with name "{playlist["name"]}" already exists!')
+        return
+
+    # create playlist and add tracks
+    print(f"Creating playlist: {playlist['name']}")
+    created_playlist = client.create_playlist(current_user_id, playlist["name"])
+
+    try:
+        print(created_playlist["id"])
+        print(created_playlist["name"])
+    except Exception:
+        pprint(created_playlist)
+        raise
+    for track in playlist_tracks["items"]:
+        time.sleep(3)
+        # from pprint import pprint
+        # pprint(track)
+        print(
+            f'   ==> {track["track"]["artists"][0]["name"]} - {track["track"]["name"]} - {track["added_at"]}'
+        )
+
+        client.add_playlist_track(created_playlist["id"], track["track"]["id"])
 
 
 if __name__ == "__main__":

@@ -73,6 +73,27 @@ class SpotifyApiClient:
                 page["items"] = items
                 return page
 
+    def find_playlist_by_name(self, playlist_name):
+        playlists = self.get_current_users_playlists()
+        for playlist in playlists["items"]:
+            if playlist["name"] == playlist_name:
+                return playlist
+        return None
+
+    def create_playlist(self, user_id: str, playlist_name: str):
+        endpoint = f"https://api.spotify.com/v1/users/{user_id}/playlists"
+        body = {"name": playlist_name}
+        r = requests.post(endpoint, headers=self._headers(), json=body)
+        r.raise_for_status()
+        return r.json()
+
+    def add_playlist_track(self, playlist_id: str, track_id: str):
+        endpoint = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks"
+        body = {"uris": [f"spotify:track:{track_id}"]}
+        r = requests.post(endpoint, headers=self._headers(), json=body)
+        r.raise_for_status()
+        return r.json()
+
 
 def spotify_api_client():
     oauth_token = os.environ["SPLOT_OAUTH_TOKEN"]
