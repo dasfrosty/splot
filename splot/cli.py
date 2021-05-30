@@ -147,17 +147,21 @@ def clone_playlist(playlist_id):
     # make sure we're not cloning our own playlist by accident
     assert current_user_id != playlist["owner"]["id"]
 
+    # make sure it's not a playlist that was already cloned
+    assert not playlist["name"].startswith(">>>")
+
     playlist_tracks = client.get_playlist_tracks(playlist["id"])
 
     # make sure playlist doesn't already exist
-    existing_playlist = find_playlist_by_name(playlist["name"])
+    existing_playlist = client.find_playlist_by_name(playlist["name"])
     if existing_playlist:
         print(f'Error: Playlist with name "{playlist["name"]}" already exists!')
         return
-
-    # create playlist and add tracks
-    print(f"Creating playlist: {playlist['name']}")
-    created_playlist = client.create_playlist(current_user_id, playlist["name"])
+        # created_playlist = existing_playlist
+    else:
+        # create playlist and add tracks
+        print(f"Creating playlist: {playlist['name']}")
+        created_playlist = client.create_playlist(current_user_id, playlist["name"])
 
     try:
         print(created_playlist["id"])
@@ -165,15 +169,26 @@ def clone_playlist(playlist_id):
     except Exception:
         pprint(created_playlist)
         raise
+
     for track in playlist_tracks["items"]:
         time.sleep(3)
-        # from pprint import pprint
-        # pprint(track)
         print(
             f'   ==> {track["track"]["artists"][0]["name"]} - {track["track"]["name"]} - {track["added_at"]}'
         )
 
-        client.add_playlist_track(created_playlist["id"], track["track"]["id"])
+        try:
+            client.add_playlist_track(created_playlist["id"], track["track"]["id"])
+        except Exception:
+            pprint(track)
+            raise
+
+
+@cli.command()
+@click.argument("playlist-id")
+@click.argument("track-id")
+def add_track_to_playlist(playlist_id, track_id):
+    print(f"{playlist_id} {track_id}")
+    client.add_playlist_track(playlist_id, track_id)
 
 
 if __name__ == "__main__":
