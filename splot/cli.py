@@ -153,6 +153,7 @@ def clone_playlist(playlist_id):
     playlist_tracks = client.get_playlist_tracks(playlist["id"])
 
     # make sure playlist doesn't already exist
+    # existing_playlist = None
     existing_playlist = client.find_playlist_by_name(playlist["name"])
     if existing_playlist:
         print(f'Error: Playlist with name "{playlist["name"]}" already exists!')
@@ -170,10 +171,10 @@ def clone_playlist(playlist_id):
         pprint(created_playlist)
         raise
 
-    for track in playlist_tracks["items"]:
+    for idx, track in enumerate(playlist_tracks["items"]):
         time.sleep(3)
         print(
-            f'   ==> {track["track"]["artists"][0]["name"]} - {track["track"]["name"]} - {track["added_at"]}'
+            f'   ==> {(idx + 1):03d} - {track["track"]["artists"][0]["name"]} - {track["track"]["name"]} - {track["added_at"]}'
         )
 
         try:
